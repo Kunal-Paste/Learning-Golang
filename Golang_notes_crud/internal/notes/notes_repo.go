@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Repo struct {
@@ -28,4 +29,28 @@ func (r *Repo) Create(ctx context.Context, note Note) (Note, error) {
 	}
 
 	return note, nil
+}
+
+func (r *Repo) List(ctx context.Context) ([]Note, error) {
+	opctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+	defer cancel()
+
+	filter := bson.M{}
+
+	cursor, err := r.coll.Find(opctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("find notes failed: %w", err)
+	}
+
+	defer cursor.Close(opctx)
+
+	var note []Note
+
+	if err := cursor.All(opctx, &note); err != nil {
+		return nil, fmt.Errorf("decode notes failed: %v", err)
+	}
+
+	return note, nil
+
 }

@@ -2,11 +2,13 @@ package server
 
 import (
 	"net/http"
+	"note-api/internal/notes"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Newrouter() *gin.Engine {
+func Newrouter(database *mongo.Database) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -15,6 +17,8 @@ func Newrouter() *gin.Engine {
 			"status": "Healthy",
 		})
 	})
+
+	notes.RegisterRoute(r, database)
 
 	return r
 
