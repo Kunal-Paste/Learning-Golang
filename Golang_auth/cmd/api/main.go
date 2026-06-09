@@ -24,7 +24,7 @@ func main() {
 		}
 	}()
 
-	router := httpserver.NewRouter()
+	router := httpserver.NewRouter(a)
 
 	srv := &http.Server{
 		Addr:              ":8000",
