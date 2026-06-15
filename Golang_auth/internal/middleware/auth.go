@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"go-auth/internal/auth"
 	"net/http"
 	"strings"
 
@@ -46,5 +47,39 @@ func AuthRequired(jwtSecret string) gin.HandlerFunc {
 			})
 			return
 		}
+
+		claims, err := auth.ParseToken(jwtSecret, tokenString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid or expired token",
+			})
+			return
+		}
+
+		c.Set(ctxUserIDkey, claims.Subject)
+		c.Set(ctxRoleKey, claims.Role)
+
+		c.Next()
+
 	}
+}
+
+func GetUserID(c *gin.Context) (string, bool) {
+	res, ok := c.Get(ctxUserIDkey)
+	if !ok {
+		return "", false
+	}
+
+	userID, ok := res.(string)
+	return userID, ok
+}
+
+func GetRole(c *gin.Context) (string, bool) {
+	res, ok := c.Get(ctxRoleKey)
+	if !ok {
+		return "", false
+	}
+
+	userRole, ok := res.(string)
+	return userRole, ok
 }
